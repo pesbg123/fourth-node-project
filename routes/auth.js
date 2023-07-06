@@ -5,6 +5,8 @@ const bcrypt = require('bcrypt');
 require('dotenv').config();
 const env = process.env;
 
+const authMiddleware = require('../middlewares/auth-middleware.js');
+
 const { Users } = require('../models');
 
 // 액세스 토큰 발급
@@ -21,7 +23,7 @@ const generateRefreshToken = (userId) => {
 };
 
 // 로그인 API
-router.post('/login', async (req, res) => {
+router.post('/login', authMiddleware, async (req, res) => {
   try {
     const { nickname, password } = req.body;
     const { refreshToken, accessToken } = req.cookies;
