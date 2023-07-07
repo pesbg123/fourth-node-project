@@ -1,7 +1,8 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const app = express();
-const PORT = 3000;
+require('dotenv').config();
+const PORT = process.env.PORT;
 
 const usersRouter = require('./routes/users.js');
 const authRouter = require('./routes/auth.js');
