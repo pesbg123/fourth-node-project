@@ -14,14 +14,14 @@ router.get('/posts', async (req, res) => {
 
     // 게시물의 존재 여부를 확인합니다.
     if (!posts) {
-      res.status(404).json({ error: '존재하는 게시물이 없습니다.' });
+      res.status(404).json({ errorMessage: '존재하는 게시물이 없습니다.' });
       return; // 추가된 return 문을 통해 함수 실행 종료
     }
     // 조회한 게시물들을 응답합니다.
     res.json({ data: posts });
   } catch (error) {
     // 오류가 발생한 경우 오류 메시지를 응답합니다.
-    res.status(500).json({ error: '게시물 조회에 실패했습니다.' });
+    res.status(500).json({ errorMessage: '게시물 조회에 실패했습니다.' });
   }
 });
 
@@ -40,7 +40,7 @@ router.get('/posts/:postId', async (req, res) => {
     res.status(200).json({ data: post });
   } catch (error) {
     // 오류가 발생한 경우 오류 메시지를 응답합니다.
-    res.status(500).json({ error: '게시물 상세조회에 실패했습니다.' });
+    res.status(500).json({ errorMessage: '게시물 상세조회에 실패했습니다.' });
   }
 });
 

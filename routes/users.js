@@ -13,7 +13,7 @@ router.post('/signup', async (req, res) => {
     if (!nickname.match(/^[a-zA-Z0-9]{3,50}$/)) {
       // 에러 메시지를 응답합니다.
       return res.status(400).json({
-        error: '닉네임은 영어나 숫자로만 이루어지게 작성해 주세요.',
+        errorMessage: '닉네임은 영어나 숫자로만 이루어지게 작성해 주세요.',
       });
     }
 
@@ -21,19 +21,19 @@ router.post('/signup', async (req, res) => {
     if (password.length < 4) {
       return res.status(400).json({
         // 에러 메시지를 응답합니다.
-        error: '패스워드를 4글자 이상 작성해 주세요.',
+        errorMessage: '패스워드를 4글자 이상 작성해 주세요.',
       });
     }
     if (password.includes(nickname)) {
       return res.status(400).json({
         // 에러 메시지를 응답합니다.
-        error: '닉네임이 패스워드에 포함될 수 없습니다.',
+        errorMessage: '닉네임이 패스워드에 포함될 수 없습니다.',
       });
     }
     if (password !== confirmPassword) {
       return res.status(400).json({
         // 에러 메시지를 응답합니다.
-        error: '패스워드와 전달된 패스워드 확인값이 일치하지 않습니다.',
+        errorMessage: '패스워드와 전달된 패스워드 확인값이 일치하지 않습니다.',
       });
     }
     // nickname 기준으로 DB에 검색합니다.
