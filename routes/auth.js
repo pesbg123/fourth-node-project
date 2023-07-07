@@ -5,8 +5,6 @@ const bcrypt = require('bcrypt');
 require('dotenv').config();
 const env = process.env;
 
-const authMiddleware = require('../middlewares/auth-middleware.js');
-
 const { Users } = require('../models');
 
 // 액세스 토큰 발급
@@ -23,7 +21,7 @@ const generateRefreshToken = (userId) => {
 };
 
 // 로그인 API
-router.post('/login', authMiddleware, async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { nickname, password } = req.body;
     const { refreshToken, accessToken } = req.cookies;
@@ -53,10 +51,9 @@ router.post('/login', authMiddleware, async (req, res) => {
     }
 
     try {
-      // refreshToken이 존재하지 않을경우
+      // refreshToken이 존재하지 않고 error name이 TokenExpiredError일 경우
       jwt.verify(refreshToken, env.REFRESH_TOKEN_KEY);
     } catch (error) {
-      // error name이 TokenExpiredError일 경우
       if (error.name === 'TokenExpiredError') {
         const decodedRefreshToken = jwt.decode(refreshToken);
         const userId = decodedRefreshToken.userId;
@@ -72,15 +69,14 @@ router.post('/login', authMiddleware, async (req, res) => {
           .cookie('accessToken', newSaveAccessTokenCookie)
           .cookie('refreshToken', newSaveRefreshTokenCookie)
           .status(200)
-          .json({ message: 'ACCESS TOKEN과 REFRESH TOKEN이 갱신되었습니다.' });
+          .json({ message: 'RACCESS TOKEN과 REFESH TOKEN이 갱신되었습니다.' });
       }
     }
 
     try {
-      // accessToken만 만료되었을 경우
+      // accessToken만 만료되었고 err name이 TokenExpiredError일 경우
       jwt.verify(req.cookies.accessToken, env.ACCESS_TOKEN_KEY);
     } catch (err) {
-      // err name이 TokenExpiredError일 경우
       if (err.name === 'TokenExpiredError') {
         const decodedRefreshToken = jwt.decode(refreshToken);
         const userId = decodedRefreshToken.userId;
@@ -96,10 +92,9 @@ router.post('/login', authMiddleware, async (req, res) => {
     }
 
     try {
-      // refreshToken만 만료되었을 경우
+      // refreshToken만 만료되었고 error name이 TokenExpiredError일 경우
       jwt.verify(req.cookies.refreshToken, env.REFRESH_TOKEN_KEY);
     } catch (error) {
-      // error name이 TokenExpiredError일 경우
       if (error.name === 'TokenExpiredError') {
         const decodedAccessToken = jwt.decode(accessToken);
         const userId = decodedAccessToken.userId;
