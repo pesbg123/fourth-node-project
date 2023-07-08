@@ -24,25 +24,39 @@ router.get('/like', authMiddleware, async (req, res) => {
       ],
       order: [['createdAt', 'desc']],
     });
-
     // 좋아요를 등록한 게시물이 존재하지 않을 경우
     if (!likes.length) {
       return res
         .status(404)
         .json({ errorMessage: '좋아요를 등록한 게시글이 존재하지 않습니다.' });
     }
+
     // 데이터 형식을 변경합니다.
-    const modifiedLikes = likes.map((like) => ({
-      postId: like.PostId,
-      likerUserId: like.UserId,
-      likersNickname: like.User.nickname,
-      postTitle: like.Post.title,
-      postCreatedAt: like.Post.createdAt,
-      postUpdatedAt: like.Post.updatedAt,
-    }));
+    const modifiedLikes = await Promise.all(
+      // 모든 게시물에 대한 좋아요 수를 한 번에 얻기위해
+      // Promise.all()을 사용해서 like.map()에서 반환된 모든 프로미스가
+      // 완료될 때까지 기다리고 그 반환값을 반환합니다.
+      likes.map(async (like) => {
+        const postId = like.PostId;
+        const postLikes = await Likes.count({ where: { PostId: postId } });
+        // modifiedLikes 변수로 반환됩니다.
+        return {
+          postId: like.PostId,
+          likerUserId: like.UserId,
+          likersNickname: like.User.nickname,
+          postTitle: like.Post.title,
+          postCreatedAt: like.Post.createdAt,
+          postUpdatedAt: like.Post.updatedAt,
+          postLikes,
+        };
+      })
+    );
+
     // 성공 메시지를 응답합니다.
     res.status(200).json({ data: modifiedLikes });
   } catch (error) {
+    console.log(error);
+
     // 에러 메시지를 응답합니다.
     res.status(500).json({ errorMessage: '좋아요 조회에 실패했습니다.' });
   }
