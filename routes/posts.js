@@ -48,13 +48,19 @@ router.get('/posts/:postId', async (req, res) => {
       ],
     });
 
-    if (!post) {
+    if (!post.length) {
       // 게시물이 존재하지 않을 경우
       return res
         .status(404)
         .json({ errorMessage: '해당 게시물이 존재하지 않습니다.' });
     }
-    res.status(200).json({ data: post });
+    // 데이터 형식 변경
+    const modifiedPosts = posts.map((post) => ({
+      nickname: post.User.nickname,
+      title: post.title,
+      createdAt: post.createdAt,
+    }));
+    res.status(200).json({ data: modifiedPosts });
   } catch (error) {
     // 오류가 발생한 경우 오류 메시지를 응답합니다.
     res.status(500).json({ errorMessage: '게시물 상세조회에 실패했습니다.' });
