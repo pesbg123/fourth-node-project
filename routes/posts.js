@@ -4,14 +4,14 @@ const { Op } = require('sequelize');
 
 const authMiddleware = require('../middlewares/auth-middleware.js');
 const { Posts, Users } = require('../models');
-const e = require('express');
 
 // 전체 게시글 조회 API
 router.get('/posts', async (req, res) => {
   try {
+    // include를 사용해서 Users모델에 있는 nickname을 같이 가져옵니다.
     const posts = await Posts.findAll({
-      attributes: ['title', 'createdAt'],
       include: [{ model: Users, attributes: ['nickname'] }],
+      attributes: ['title', 'createdAt', 'postId', 'updatedAt'],
       order: [['createdAt', 'desc']], // 작성날짜 기준으로 내림차순 정렬
     });
 
@@ -22,9 +22,11 @@ router.get('/posts', async (req, res) => {
     }
     // 데이터 형식 변경
     const modifiedPosts = posts.map((post) => ({
+      postId: post.postId,
       nickname: post.User.nickname,
       title: post.title,
       createdAt: post.createdAt,
+      updatedAt: post.updatedAt,
     }));
     // 조회한 게시물들을 응답합니다.
     res.json({ data: modifiedPosts });
@@ -38,9 +40,10 @@ router.get('/posts', async (req, res) => {
 router.get('/posts/:postId', async (req, res) => {
   try {
     const { postId } = req.params;
+    // include를 사용해서 Users모델에 있는 nickname을 같이 가져옵니다.
     const getTargetPost = await Posts.findOne({
       where: { postId },
-      attributes: ['title', 'createdAt'],
+      attributes: ['title', 'createdAt', 'updatedAt', 'postId'],
       include: [
         {
           model: Users,
@@ -48,7 +51,6 @@ router.get('/posts/:postId', async (req, res) => {
         },
       ],
     });
-    console.log(getTargetPost);
 
     if (!getTargetPost) {
       // 게시물이 존재하지 않을 경우
@@ -56,10 +58,17 @@ router.get('/posts/:postId', async (req, res) => {
         .status(404)
         .json({ errorMessage: '해당 게시물이 존재하지 않습니다.' });
     }
-    res.status(200).json({ data: getTargetPost });
+    // 게시물이 존재한다면 응답 데이터 형식 변경
+    const modifiedPost = {
+      postId: getTargetPost.postId,
+      nickname: getTargetPost.User.nickname,
+      title: getTargetPost.title,
+      createdAt: getTargetPost.createdAt,
+      updatedAt: getTargetPost.updatedAt,
+    };
+    // 확인 메시지를 응답합니다.
+    res.status(200).json({ data: modifiedPost });
   } catch (error) {
-    console.log(error);
-
     // 오류가 발생한 경우 오류 메시지를 응답합니다.
     res.status(500).json({ errorMessage: '게시물 상세조회에 실패했습니다.' });
   }
@@ -142,7 +151,7 @@ router.delete('/posts/:postId', authMiddleware, async (req, res) => {
     // 게시글을 삭제합니다.
     post.destroy({
       where: {
-        [Op.end]: [{ postId: post.postId }, { UserId: post.UserId }],
+        [Op.and]: [{ postId: post.postId }, { UserId: post.UserId }],
       },
     });
     // 확인 메시지를 응답합니다.

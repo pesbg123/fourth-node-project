@@ -3,18 +3,20 @@ const router = express.Router();
 const { Op } = require('sequelize');
 
 const authMiddleware = require('../middlewares/auth-middleware.js');
-const { Posts, Comments } = require('../models');
+const { Posts, Comments, Users } = require('../models');
 
 // 댓글 목록 조회 API
 router.get('/posts/:postId/comments', async (req, res) => {
   try {
     const { postId } = req.params;
-
     const post = await Posts.findOne({
       where: { postId },
     });
+    // include를 사용해서 Users모델에 있는 nickname을 같이 가져옵니다.
     const comments = await Comments.findAll({
       where: { postId },
+      include: [{ model: Users, attributes: ['nickname'] }],
+      attributes: ['commentId', 'content', 'createdAt', 'updatedAt'],
       order: [['createdAt', 'desc']], // 작성날짜 기준으로 내림차순 정렬
     });
 
@@ -25,13 +27,21 @@ router.get('/posts/:postId/comments', async (req, res) => {
         .json({ errorMessage: '게시물이 존재하지 않습니다.' });
     }
     // 댓글의 존재 여부를 확인합니다.
-    if (!comments) {
+    if (!comments.length) {
       return res
         .status(404)
         .json({ errorMessage: '댓글이 존재하지 않습니다.' });
     }
-    //
-    res.status(200).json({ data: comments });
+    // 데이터 형식 변경
+    const modifiedComments = comments.map((comment) => ({
+      commentId: comment.commentId,
+      nickname: comment.User.nickname,
+      content: comment.content,
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+    }));
+    // 확인 메시지를 응답합니다.
+    res.status(200).json({ data: modifiedComments });
   } catch (error) {
     // 에러 메시지를 응답합니다.
     res.status(500).json({ errorMessage: '댓글 조회에 실패했습니다.' });
@@ -44,10 +54,16 @@ router.post('/posts/:postId/comments', authMiddleware, async (req, res) => {
     const { content } = req.body;
     const { postId } = req.params;
     const { userId } = res.locals.user;
-
+    const post = await Posts.findOne({ where: { postId } });
     // body에서 받은 댓글 데이터가 비어있는 경우
     if (!content) {
       return res.status(400).json({ errorMessage: '댓글을 입력해주세요.' });
+    }
+    // 해당 게시물이 존재하지 않을 경우
+    if (!post) {
+      return res
+        .status(404)
+        .json({ errorMessage: '해당 게시물이 존재하지 않습니다.' });
     }
     // 댓글을 생성합니다.
     await Comments.create({
