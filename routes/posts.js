@@ -105,21 +105,28 @@ router.delete('/posts/:postId', authMiddleware, async (req, res) => {
     const { userId } = res.locals.user;
     const post = await Posts.findOne({ where: { postId } });
 
+    // 해당 게시물이 존재하지 않을 경우
+    if (!post) {
+      return res
+        .status(404)
+        .json({ errorMessage: '해당 게시물이 존재하지 않습니다.' });
+    }
     // 본인이 작성한 게시글이 아닐 경우
     if (post.UserId !== userId) {
       return res
         .status(403)
         .json({ errorMessage: '본인이 작성한 게시글만 삭제할 수 있습니다.' });
     }
+
     // 게시글을 삭제합니다.
     post.destroy({
-      [Op.end]: [{ postId: post.postId }, { UserId: post.UserId }],
+      where: {
+        [Op.end]: [{ postId: post.postId }, { UserId: post.UserId }],
+      },
     });
     // 확인 메시지를 응답합니다.
     res.status(200).json({ message: '게시물 삭제에 성공했습니다.' });
   } catch (error) {
-    console.log(error);
-
     // 에러 메시지를 응답합니다.
     res.status(500).json({ errorMessage: '게시물 삭제에 실패했습니다.' });
   }

@@ -6,7 +6,6 @@ const env = process.env;
 // 사용자 인증 미들웨어
 module.exports = async (req, res, next) => {
   const { accessToken, refreshToken } = req.cookies; // 요청의 쿠키에서 accessToken과 refreshToken를 가져옵니다.
-
   // 인증 토큰이 없을 경우
   if (!accessToken || !refreshToken) {
     res.status(401).send({

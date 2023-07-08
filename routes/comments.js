@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { Op } = require('sequelize');
 
 const authMiddleware = require('../middlewares/auth-middleware.js');
 const { Posts, Comments } = require('../models');
@@ -139,7 +140,14 @@ router.delete(
           .json({ errorMessage: '접근이 허용되지 않습니다.' });
       }
       // 코멘트를 삭제합니다.
-      await Comments.destroy({ where: { commentId } });
+      await Comments.destroy({
+        where: {
+          [Op.and]: [
+            { commentId }, // commentId를 기준으로 삭제할 댓글을 지정합니다.
+            { UserId: userId }, // userId를 기준으로 삭제할 댓글을 지정합니다.
+          ],
+        },
+      });
       // 확인 메시지를 응답합니다.
       res.status(200).json({ message: '댓글을 삭제하였습니다.' });
     } catch (error) {
