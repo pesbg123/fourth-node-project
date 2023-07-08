@@ -37,7 +37,16 @@ router.get('/posts', async (req, res) => {
 router.get('/posts/:postId', async (req, res) => {
   try {
     const { postId } = req.params;
-    const post = await Posts.findOne({ where: { postId } });
+    const post = await Posts.findOne({
+      where: { postId },
+      attributes: ['title', 'createdAt'],
+      include: [
+        {
+          model: Users,
+          attributes: ['nickname'],
+        },
+      ],
+    });
 
     if (!post) {
       // 게시물이 존재하지 않을 경우
