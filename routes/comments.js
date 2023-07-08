@@ -74,8 +74,6 @@ router.post('/posts/:postId/comments', authMiddleware, async (req, res) => {
     // 확인 메시지를 응답합니다.
     res.status(200).json({ message: '댓글을 생성했습니다.' });
   } catch (error) {
-    console.log(error);
-
     // 에러 메시지를 응답합니다.
     res.status(500).json({ errorMessage: '댓글 생성에 실패했습니다.' });
   }
@@ -167,8 +165,6 @@ router.delete(
       // 확인 메시지를 응답합니다.
       res.status(200).json({ message: '댓글을 삭제하였습니다.' });
     } catch (error) {
-      console.log(error);
-
       // 에러 메시지를 응답합니다.
       res.status(500).json({ errorMessage: '댓글 삭제에 실패했습니다.' });
     }
