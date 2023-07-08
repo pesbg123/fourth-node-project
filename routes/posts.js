@@ -3,22 +3,30 @@ const router = express.Router();
 const { Op } = require('sequelize');
 
 const authMiddleware = require('../middlewares/auth-middleware.js');
-const { Posts } = require('../models');
+const { Posts, Users } = require('../models');
 
 // 전체 게시글 조회 API
 router.get('/posts', async (req, res) => {
   try {
     const posts = await Posts.findAll({
+      attributes: ['title', 'createdAt'],
+      include: [{ model: Users, attributes: ['nickname'] }],
       order: [['createdAt', 'desc']], // 작성날짜 기준으로 내림차순 정렬
     });
 
     // 게시물의 존재 여부를 확인합니다.
-    if (!posts) {
+    if (!posts.length) {
       res.status(404).json({ errorMessage: '존재하는 게시물이 없습니다.' });
       return; // 추가된 return 문을 통해 함수 실행 종료
     }
+    // 데이터 형식 변경
+    const modifiedPosts = posts.map((post) => ({
+      nickname: post.User.nickname,
+      title: post.title,
+      createdAt: post.createdAt,
+    }));
     // 조회한 게시물들을 응답합니다.
-    res.json({ data: posts });
+    res.json({ data: modifiedPosts });
   } catch (error) {
     // 오류가 발생한 경우 오류 메시지를 응답합니다.
     res.status(500).json({ errorMessage: '게시물 조회에 실패했습니다.' });
