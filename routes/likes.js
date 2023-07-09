@@ -51,9 +51,10 @@ router.get('/like', authMiddleware, async (req, res) => {
         };
       })
     );
-
+    // 좋아요 갯수별로 내림차순 정렬을위해 sort()메서드 사용
+    const sortedLikes = modifiedLikes.sort((a, b) => b.postLikes - a.postLikes);
     // 성공 메시지를 응답합니다.
-    res.status(200).json({ data: modifiedLikes });
+    res.status(200).json({ data: sortedLikes });
   } catch (error) {
     console.log(error);
 
