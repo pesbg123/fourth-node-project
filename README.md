@@ -1,3 +1,9 @@
+## ERD
+
+![Alt text](image.png)
+
+## 폴더구조
+
 ```
 Lv_4-node-project-solo
 ├─.gitignore
@@ -18,5 +24,4 @@ Lv_4-node-project-solo
 ├─ package-lock.json
 ├─ package.json
 └─ seeders
-
 ```
