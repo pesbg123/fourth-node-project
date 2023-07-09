@@ -3,7 +3,7 @@ const router = express.Router();
 const { Op } = require('sequelize');
 
 const authMiddleware = require('../middlewares/auth-middleware.js');
-const { Posts, Users } = require('../models');
+const { Posts, Users, Likes } = require('../models');
 
 // 전체 게시글 조회 API
 router.get('/posts', async (req, res) => {
@@ -20,18 +20,33 @@ router.get('/posts', async (req, res) => {
       res.status(404).json({ errorMessage: '존재하는 게시물이 없습니다.' });
       return; // 추가된 return 문을 통해 함수 실행 종료
     }
-    // 데이터 형식 변경
-    const modifiedPosts = posts.map((post) => ({
-      postId: post.postId,
-      nickname: post.User.nickname,
-      title: post.title,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
-    }));
+    // 데이터 형식을 변경합니다.
+    const modifiedPosts = await Promise.all(
+      // 모든 게시물에 대한 좋아요 수를 한 번에 얻기위해
+      // Promise.all()을 사용해서 like.map()에서 반환된 모든 프로미스가
+      // 완료될 때까지 기다리고 그 반환값을 반환합니다.
+      posts.map(async (post) => {
+        const postId = post.postId;
+        const postLikes = await Likes.count({ where: { PostId: postId } });
+        // modifiedLikes 변수로 반환됩니다.
+        return {
+          postId: post.postId,
+          nickname: post.User.nickname,
+          title: post.title,
+          createdAt: post.createdAt,
+          updatedAt: post.updatedAt,
+          postLikes: postLikes,
+        };
+      })
+    );
+    // 좋아요 갯수별로 내림차순 정렬을위해 sort()메서드 사용
+    const sortedLikes = modifiedPosts.sort((a, b) => b.postLikes - a.postLikes);
     // 조회한 게시물들을 응답합니다.
-    res.json({ data: modifiedPosts });
+    res.json({ data: sortedLikes });
   } catch (error) {
     // 오류가 발생한 경우 오류 메시지를 응답합니다.
+    console.log(error);
+
     res.status(500).json({ errorMessage: '게시물 조회에 실패했습니다.' });
   }
 });
