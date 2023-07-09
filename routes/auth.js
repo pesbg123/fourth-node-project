@@ -10,13 +10,13 @@ const { Users } = require('../models');
 // 액세스 토큰 발급
 const generateAccessToken = (userId) => {
   return jwt.sign({ userId: userId }, env.ACCESS_TOKEN_KEY, {
-    expiresIn: '1h',
+    expiresIn: '1h', // 만료시간 1시간
   });
 };
 // 리프레시 토큰 발급
 const generateRefreshToken = (userId) => {
   return jwt.sign({ userId: userId }, env.REFRESH_TOKEN_KEY, {
-    expiresIn: '7d',
+    expiresIn: '7d', // 만료시간 7일
   });
 };
 
@@ -128,8 +128,6 @@ router.post('/login', async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
-
     // 에러 메시지를 응답합니다.
     res.status(500).json({ errorMessage: '로그인에 실패했습니다.' });
   }

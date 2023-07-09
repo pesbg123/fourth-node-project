@@ -15,14 +15,14 @@ router.get('/posts', async (req, res) => {
       order: [['createdAt', 'desc']], // 작성날짜 기준으로 내림차순 정렬
     });
 
-    // 게시물의 존재 여부를 확인합니다.
+    // 게시글의 존재 여부를 확인합니다.
     if (!posts.length) {
-      res.status(404).json({ errorMessage: '존재하는 게시물이 없습니다.' });
+      res.status(404).json({ errorMessage: '존재하는 게시글이 없습니다.' });
       return; // 추가된 return 문을 통해 함수 실행 종료
     }
     // 데이터 형식을 변경합니다.
     const modifiedPosts = await Promise.all(
-      // 모든 게시물에 대한 좋아요 수를 한 번에 얻기위해
+      // 모든 게시글에 대한 좋아요 수를 한 번에 얻기위해
       // Promise.all()을 사용해서 like.map()에서 반환된 모든 프로미스가
       // 완료될 때까지 기다리고 그 반환값을 반환합니다.
       posts.map(async (post) => {
@@ -41,13 +41,11 @@ router.get('/posts', async (req, res) => {
     );
     // 좋아요 갯수별로 내림차순 정렬을위해 sort()메서드 사용
     const sortedLikes = modifiedPosts.sort((a, b) => b.postLikes - a.postLikes);
-    // 조회한 게시물들을 응답합니다.
+    // 조회한 게시글들을 응답합니다.
     res.json({ data: sortedLikes });
   } catch (error) {
     // 오류가 발생한 경우 오류 메시지를 응답합니다.
-    console.log(error);
-
-    res.status(500).json({ errorMessage: '게시물 조회에 실패했습니다.' });
+    res.status(500).json({ errorMessage: '게시글 조회에 실패했습니다.' });
   }
 });
 
@@ -68,12 +66,12 @@ router.get('/posts/:postId', async (req, res) => {
     });
 
     if (!getTargetPost) {
-      // 게시물이 존재하지 않을 경우
+      // 게시글이 존재하지 않을 경우
       return res
         .status(404)
-        .json({ errorMessage: '해당 게시물이 존재하지 않습니다.' });
+        .json({ errorMessage: '해당 게시글이 존재하지 않습니다.' });
     }
-    // 게시물이 존재한다면 응답 데이터 형식 변경
+    // 게시글이 존재한다면 응답 데이터 형식 변경
     const modifiedPost = {
       postId: getTargetPost.postId,
       nickname: getTargetPost.User.nickname,
@@ -85,7 +83,7 @@ router.get('/posts/:postId', async (req, res) => {
     res.status(200).json({ data: modifiedPost });
   } catch (error) {
     // 오류가 발생한 경우 오류 메시지를 응답합니다.
-    res.status(500).json({ errorMessage: '게시물 상세조회에 실패했습니다.' });
+    res.status(500).json({ errorMessage: '게시글 상세조회에 실패했습니다.' });
   }
 });
 
@@ -102,17 +100,17 @@ router.post('/posts', authMiddleware, async (req, res) => {
         .json({ errorMessage: '제목이나 본문을 입력해주세요.' });
     }
 
-    // 새로운 게시물을 생성합니다.
+    // 새로운 게시글을 생성합니다.
     await Posts.create({
       UserId: userId,
       title,
       content,
     });
     // 확인 메시지를 응답합니다.
-    return res.status(201).json({ message: '게시물을 생성하였습니다.' });
+    return res.status(201).json({ message: '게시글을 생성하였습니다.' });
   } catch (error) {
     // 에러 메시지를 응답합니다.
-    res.status(500).json({ errorMessage: '게시물 작성에 실패했습니다.' });
+    res.status(500).json({ errorMessage: '게시글 작성에 실패했습니다.' });
   }
 });
 
@@ -136,10 +134,10 @@ router.patch('/posts/:postId', authMiddleware, async (req, res) => {
     if (title) post.update({ title });
     if (content) post.update({ content });
     // 확인 메시지를 응답합니다.
-    return res.status(202).json({ message: '게시물 수정에 성공했습니다.' });
+    return res.status(202).json({ message: '게시글 수정에 성공했습니다.' });
   } catch (error) {
     // 에러 메시지를 응답합니다.
-    res.status(500).json({ errorMessage: '게시물 수정에 실패했습니다.' });
+    res.status(500).json({ errorMessage: '게시글 수정에 실패했습니다.' });
   }
 });
 
@@ -150,11 +148,11 @@ router.delete('/posts/:postId', authMiddleware, async (req, res) => {
     const { userId } = res.locals.user;
     const post = await Posts.findOne({ where: { postId } });
 
-    // 해당 게시물이 존재하지 않을 경우
+    // 해당 게시글이 존재하지 않을 경우
     if (!post) {
       return res
         .status(404)
-        .json({ errorMessage: '해당 게시물이 존재하지 않습니다.' });
+        .json({ errorMessage: '해당 게시글이 존재하지 않습니다.' });
     }
     // 본인이 작성한 게시글이 아닐 경우
     if (post.UserId !== userId) {
@@ -170,10 +168,10 @@ router.delete('/posts/:postId', authMiddleware, async (req, res) => {
       },
     });
     // 확인 메시지를 응답합니다.
-    res.status(200).json({ message: '게시물 삭제에 성공했습니다.' });
+    res.status(200).json({ message: '게시글 삭제에 성공했습니다.' });
   } catch (error) {
     // 에러 메시지를 응답합니다.
-    res.status(500).json({ errorMessage: '게시물 삭제에 실패했습니다.' });
+    res.status(500).json({ errorMessage: '게시글 삭제에 실패했습니다.' });
   }
 });
 module.exports = router; // router 모듈을 외부로 내보냅니다.
