@@ -42,7 +42,7 @@ router.get('/like', authMiddleware, async (req, res) => {
         const postLikes = await Likes.count({ where: { PostId: postId } });
         // modifiedLikes 변수로 반환됩니다.
         return {
-          postId: like.PostId,
+          postId,
           likerUserId: like.UserId,
           likersNickname: like.User.nickname,
           postTitle: like.Post.title,
