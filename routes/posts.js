@@ -40,7 +40,7 @@ router.get('/posts', async (req, res) => {
       })
     );
     // 조회한 게시글들을 응답합니다.
-    res.json({ data: modifiedPosts });
+    res.status(200).json({ data: modifiedPosts });
   } catch (error) {
     // 오류가 발생한 경우 오류 메시지를 응답합니다.
     res.status(500).json({ errorMessage: '게시글 조회에 실패했습니다.' });

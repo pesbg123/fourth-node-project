@@ -140,7 +140,7 @@ router.post('/logout', (req, res) => {
   res.clearCookie('refreshToken');
 
   // 성공 메시지를 응답합니다.
-  res.json({ message: '로그아웃되었습니다.' });
+  res.status(200).json({ message: '로그아웃되었습니다.' });
 });
 
 module.exports = router; // router 모듈을 외부로 내보냅니다.
