@@ -39,10 +39,8 @@ router.get('/posts', async (req, res) => {
         };
       })
     );
-    // 좋아요 갯수별로 내림차순 정렬을위해 sort()메서드 사용
-    const sortedLikes = modifiedPosts.sort((a, b) => b.postLikes - a.postLikes);
     // 조회한 게시글들을 응답합니다.
-    res.json({ data: sortedLikes });
+    res.json({ data: modifiedPosts });
   } catch (error) {
     // 오류가 발생한 경우 오류 메시지를 응답합니다.
     res.status(500).json({ errorMessage: '게시글 조회에 실패했습니다.' });
